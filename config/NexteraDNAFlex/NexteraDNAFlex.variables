@@ -1,3 +1,3 @@
 callCNV=true
 callSV=true
-callRepeats=true
+callRepeats=false

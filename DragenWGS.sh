@@ -50,7 +50,7 @@ cp /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/commands/r
 echo User Selected to Call CNVS: $callCNV
 
 # If user has selected to call CNVS then add the relevant lines to the run_dragen.sh template script
-if [ "$callCNV" == true ]
+if [[ "$callCNV" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
 echo '--enable-cnv true \' >> run_dragen.sh
@@ -60,7 +60,7 @@ fi
 
 echo User Selected to Call Repeat Regions: $callRepeats
 # Of user has selected to call repeat regions then add the relevant lines to the run_dragen.sh template script
-if [ "$callRepeats" == true ]
+if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
 echo '--repeat-genotype-enable true \' >> run_dragen.sh
@@ -82,13 +82,13 @@ fi
 
 
 # add bam files for joint SV calling
-if [ -e /staging/data/results/$seqId/$panel/$sampleId/"$seqId"_"$sampleId".bam ]; then
+if [[ -e /staging/data/results/$seqId/$panel/$sampleId/"$seqId"_"$sampleId".bam ]] && [[ $sampleId != *"NTC"* ]]; then
     echo "--bam-input /staging/data/results/$seqId/$panel/$sampleId/"$seqId"_"$sampleId".bam \\" >> /staging/data/results/$seqId/$panel/BAMList.txt
 fi
 
 
 # add tn.tsv files for joint CNV calling 
-if [ -e /staging/data/results/$seqId/$panel/$sampleId/"$seqId"_"$sampleId".tn.tsv ]; then
+if [[ -e /staging/data/results/$seqId/$panel/$sampleId/"$seqId"_"$sampleId".tn.tsv ]] && [[ $sampleId != *"NTC"* ]]; then
     echo "--cnv-input /staging/data/results/$seqId/$panel/$sampleId/"$seqId"_"$sampleId".tn.tsv \\" >> /staging/data/results/$seqId/$panel/TNList.txt
 fi
 
@@ -107,7 +107,7 @@ if [ $expGVCF == $obsGVCF ]; then
 
     echo "performing joint genotyping of snps/indels"
 
-    dragen \
+    /opt/edico/bin/dragen \
         -r  /staging/human/reference/GRCh37/ \
         --output-directory /staging/data/results/$seqId/$panel/ \
         --output-file-prefix "$seqId" \

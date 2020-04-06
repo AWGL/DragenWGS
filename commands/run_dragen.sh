@@ -8,7 +8,7 @@ pipelineVersion=$4
 panel=$5
 
 
-dragen \
+/opt/edico/bin/dragen \
 -r /staging/human/reference/GRCh37/ \
 --output-directory /staging/data/results/$seqId/$panel/$sampleId \
 --output-file-prefix "$seqId"_"$sampleId" \
