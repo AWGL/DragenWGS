@@ -5,7 +5,7 @@ seqId=$1
 panel=$2
 
 
-dragen -f \
+/opt/edico/bin/dragen -f \
 --sv-reference /staging/human/reference/GRCh37/human_g1k_v37.fasta \
 --ref-dir /staging/human/reference/GRCh37/ \
 --enable-map-align false \

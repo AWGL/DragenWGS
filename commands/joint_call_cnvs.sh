@@ -5,7 +5,7 @@ seqId=$1
 panel=$2
 
 
-dragen -r \
+/opt/edico/bin/dragen -r \
 /staging/human/reference/GRCh37/ \
 --output-directory /staging/data/results/$seqId/$panel/ \
 --output-file-prefix $seqId \
