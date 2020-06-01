@@ -29,23 +29,18 @@ IlluminaTruSightOne/
 │   └── sample1.variables
 ```
 
- This can be found within the staging area fastq directory on the Dragen e.g. /staging/data/fastq/191010_D00501_0366_BH5JWHBCX3/Data/NexteraDNAFlex
+ This can be found within the staging area on the Dragen e.g. /staging/data/results/191010_D00501_0366_BH5JWHBCX3/$sampleId/NexteraDNAFlex
 
  Once within this folder:
 
  ```
-bash DragenWGS.sh $sample_folder_location
+bash DragenWGS.sh 
 ```
-Where $sample_folder_location is something like /staging/data/fastq/191010_D00501_0366_BH5JWHBCX3/Data/NexteraDNAFlex/sample1
 
- Once the gvcf creation is complete for each sample the joint genotyping will be called and produce the final joint vcf.
+ Once the gvcf creation is complete for each sample the joint genotyping will be called and produce the final joint vcf in the folder unstream of the current working directory (run folder).
 
 
  ## Results
-
- Produces results in:
-
- /staging/data/results/$run_id/$panel/
 
  Will produce:
 
