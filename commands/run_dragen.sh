@@ -10,7 +10,7 @@ panel=$5
 
 /opt/edico/bin/dragen \
 -r /staging/human/reference/GRCh37/ \
---output-directory /staging/data/results/$seqId/$panel/$sampleId \
+--output-directory . \
 --output-file-prefix "$seqId"_"$sampleId" \
 --output-format BAM \
 --enable-map-align-output true \

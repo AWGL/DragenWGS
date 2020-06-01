@@ -10,5 +10,5 @@ panel=$2
 --ref-dir /staging/human/reference/GRCh37/ \
 --enable-map-align false \
 --enable-sv true \
---output-directory /staging/data/results/$seqId/$panel/ \
+--output-directory . \
 --output-file-prefix $seqId \

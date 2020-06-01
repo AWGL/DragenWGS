@@ -2,5 +2,5 @@ callCNV=true
 callSV=true
 callRepeats=false
 post_processing_pipeline=dragenwgs_post_processing
-post_processing_pipeline_version=1.0.0
+post_processing_pipeline_version=1.1.0
 
