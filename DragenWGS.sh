@@ -137,10 +137,6 @@ if [ $expGVCF == $obsGVCF ]; then
         bash joint_call_svs.sh $seqId $panel
 
     fi
-     
-
-    # delete gvcfs
-    ls */*.gvcf.gz | xargs rm
 
 else
     echo "sampleId is not the last sample"

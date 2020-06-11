@@ -20,7 +20,7 @@ panel=$5
 --enable-variant-caller true \
 --qc-cross-cont-vcf /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/sample_cross_contamination_resource_GRCh37.vcf \
 --vc-sample-name "$sampleId" \
---vc-emit-ref-confidence BP_RESOLUTION \
+--vc-emit-ref-confidence GVCF \
 --strict-mode true \
 --qc-coverage-region-1 /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/"$panel"_coverage.bed \
 --qc-coverage-reports-1 cov_report \
