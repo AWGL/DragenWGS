@@ -9,16 +9,19 @@ version=1.0.0
 # SETUP                                      #
 ##############################################
 
+pipeline_dir="/home/transfer/dragen/pipelines/"
+dragen_ref="/staging/human/reference/GRCh37/"
+
 
 # load variables for sample and pipeline
 . *.variables
-. /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables
+. "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables
 
 
 # copy relevant variables files to the results directory
-cp /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables ..
-cp -r /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/commands .
-
+cp "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables ..
+cp -r "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/commands .
+cp -r "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config .
 
 #############################################
 # Get FASTQs                                #
@@ -49,8 +52,8 @@ echo User Selected to Call CNVS: $callCNV
 if [[ "$callCNV" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
-echo '--enable-cnv true \' >> commands/run_dragen.sh
-echo '--cnv-enable-self-normalization true \' >> commands/run_dragen.sh 
+echo '--enable-cnv true \' >> commands/run_dragen_per_sample.sh
+echo '--cnv-enable-self-normalization true \' >> commands/run_dragen_per_sample.sh 
 
 fi
 
@@ -59,17 +62,14 @@ echo User Selected to Call Repeat Regions: $callRepeats
 if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
-echo '--repeat-genotype-enable true \' >> commands/run_dragen.sh
-echo "--repeat-genotype-specs /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/smn-catalog.grch37.json  \\" >> commands/run_dragen.sh
-echo '--auto-detect-sample-sex true \' >> commands/run_dragen.sh
+echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
+echo "--repeat-genotype-specs config/"$panel"/smn-catalog.grch37.json  \\" >> commands/run_dragen_per_sample.sh
+echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
 
 # run sample level script
-bash commands/run_dragen.sh $seqId $sampleId $pipelineName $pipelineVersion $panel
-
-
-
+bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref
 
 # add gvcfs for joint SNP/Indel calling
 if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
@@ -85,7 +85,7 @@ fi
 
 # add tn.tsv files for joint CNV calling 
 if [[ -e "$seqId"_"$sampleId".tn.tsv ]] && [[ $sampleId != *"NTC"* ]]; then
-    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv \\" >> /staging/data/results/$seqId/$panel/TNList.txt
+    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv \\" >> ../TNList.txt
 fi
 
 
@@ -109,14 +109,12 @@ if [ $expGVCF == $obsGVCF ]; then
     cd ..
 
     /opt/edico/bin/dragen \
-        -r  /staging/human/reference/GRCh37/ \
+        -r  $dragen_ref \
         --output-directory . \
         --output-file-prefix "$seqId" \
         --enable-joint-genotyping true \
         --variant-list gVCFList.txt \
         --strict-mode true \
-        --enable-vqsr true \
-        --vqsr-config /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/dragen-VQSR.cfg
      
     if [ $callCNV == true ]; then
 
@@ -124,7 +122,7 @@ if [ $expGVCF == $obsGVCF ]; then
 
         cat TNList.txt >> joint_call_cnvs.sh
 
-        bash joint_call_cnvs.sh $seqId $panel
+        bash joint_call_cnvs.sh $seqId $panel $dragen_ref
 
     fi
 
@@ -134,7 +132,7 @@ if [ $expGVCF == $obsGVCF ]; then
 
         cat BAMList.txt >> joint_call_svs.sh
 
-        bash joint_call_svs.sh $seqId $panel
+        bash joint_call_svs.sh $seqId $panel $dragen_ref
 
     fi
 
