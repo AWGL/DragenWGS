@@ -1,16 +1,33 @@
 #!/bin/bash
+
+#SBATCH --time=24:00:00
+#SBATCH --output=DragenWGS-%N-%j.output
+#SBATCH --error=DragenWGS-%N-%j.error
+#SBATCH --partition=dragen2
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH --threads-per-core=2
+#SBATCH --nodes=1
+
+
 set -euo pipefail
 
-# Usage: cd /staging/data/fastq/runId/Data/panel/sampleId && bash /data/pipelines/DragenWGS/DragenWGS-1.0.0/DragenWGS.sh 
+# set max processes and open files as these differ between wren and head node
+ulimit -S -u 16384
+ulimit -S -n 65535
 
-version=1.0.0
+
+# Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh 
+
+version=2.0.0
 
 ##############################################
 # SETUP                                      #
 ##############################################
 
 pipeline_dir="/home/transfer/dragen/pipelines/"
-dragen_ref="/staging/human/reference/GRCh37/"
+dragen_ref="/staging/resources/human/reference/GRCh37"
+output_dir="/Output/results/"
 
 
 # load variables for sample and pipeline
@@ -136,8 +153,58 @@ if [ $expGVCF == $obsGVCF ]; then
 
     fi
 
+
+    # move results data - don't move symlinks fastqs
+    if [ -d "$output_dir"/"$seqId"/"$panel" ]; then
+        echo "$output_dir/$seqId/$panel already exists - cannot rsync"
+        exit 1
+    else
+
+        mkdir -p "$output_dir"/"$seqId"/"$panel"
+        rsync -azP --no-links . "$output_dir"/"$seqId"/"$panel"
+    fi
+
+    # mark results as complete - do this first so post processing can start asap
+    touch "$output_dir"/"$seqId"/"$panel"/dragen_complete.txt
+    touch "$output_dir"/"$seqId"/"$panel"/post_processing_required.txt
+
+    # clean up staging results
+    rm -r /staging/data/results/"$seqId"/"$panel"
+    # clean up staging fastq
+    rm -r /staging/data/fastq/"$seqId"/Data/"$panel"
+
+
+    # clean up staging fastq if we have processed all panels
+    if [ "$(ls -A /staging/data/fastq/"$seqId"/Data/)" ]; then
+        echo "Not all panels processed - keeping staging fastq"
+    else
+        echo "All panels processed - removing staging fastq directory"
+        rm -r /staging/data/fastq/"$seqId"/
+
+    fi
+
+    # clean up staging results if we have processed all panels
+    if [ "$(ls -A /staging/data/results/"$seqId"/)" ]; then
+        echo "Not all panels processed - keeping staging results"
+    else
+        echo "All panels processed - removing staging results directory"
+        rm -r /staging/data/results/"$seqId"/
+
+    fi
+
 else
-    echo "sampleId is not the last sample"
+    echo "$sampleId is not the last sample"
 
 fi
+
+
+
+
+
+
+
+
+
+
+r
 
