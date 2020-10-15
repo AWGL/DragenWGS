@@ -1,15 +1,5 @@
 #!/bin/bash
 
-#SBATCH --time=24:00:00
-#SBATCH --output=DragenWGS-%N-%j.output
-#SBATCH --error=DragenWGS-%N-%j.error
-#SBATCH --partition=dragen2
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
-#SBATCH --threads-per-core=2
-#SBATCH --nodes=1
-
-
 set -euo pipefail
 
 # set max processes and open files as these differ between wren and head node
@@ -25,7 +15,7 @@ version=2.0.0
 # SETUP                                      #
 ##############################################
 
-pipeline_dir="/home/transfer/dragen/pipelines/"
+pipeline_dir="/data/diagnostics/pipelines/"
 dragen_ref="/staging/resources/human/reference/GRCh37"
 output_dir="/Output/results/"
 
@@ -198,13 +188,4 @@ else
 fi
 
 
-
-
-
-
-
-
-
-
-r
 
