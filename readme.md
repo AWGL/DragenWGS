@@ -12,7 +12,7 @@ A pipeline to perform joint calling on WGS NGS data on the Dragen server.
 
 ## Requirements
 
-dragen Version 07.021.408.3.4.12 (Software Release v3.4+)
+dragen version 3.7
 
 ## Run
 
