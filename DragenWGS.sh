@@ -91,8 +91,8 @@ fi
 
 
 # add tn.tsv files for joint CNV calling 
-if [[ -e "$seqId"_"$sampleId".tn.tsv ]] && [[ $sampleId != *"NTC"* ]]; then
-    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv \\" >> ../TNList.txt
+if [[ -e "$seqId"_"$sampleId".tn.tsv.gz ]] && [[ $sampleId != *"NTC"* ]]; then
+    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv.gz \\" >> ../TNList.txt
 fi
 
 
@@ -119,6 +119,7 @@ if [ $expGVCF == $obsGVCF ]; then
         -r  $dragen_ref \
         --output-directory . \
         --output-file-prefix "$seqId" \
+        --vc-enable-joint-detection true \
         --enable-joint-genotyping true \
         --variant-list gVCFList.txt \
         --strict-mode true \

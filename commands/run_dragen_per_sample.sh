@@ -18,6 +18,7 @@ dragen_ref=$6
 --fastq-list-sample-id $sampleId \
 --enable-duplicate-marking true \
 --enable-variant-caller true \
+--vc-enable-joint-detection true \
 --qc-cross-cont-vcf config/"$panel"/sample_cross_contamination_resource_GRCh37.vcf \
 --vc-sample-name "$sampleId" \
 --vc-emit-ref-confidence GVCF \
