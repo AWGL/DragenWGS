@@ -153,6 +153,23 @@ if [ $expGVCF == $obsGVCF ]; then
 
         mkdir -p "$output_dir"/"$seqId"/"$panel"
         rsync -azP --no-links . "$output_dir"/"$seqId"/"$panel"
+
+        # get md5 sums for source
+        find . -type f | egrep -v "*md5" | egrep -v "*.log" | xargs md5sum | cut -d" " -f 1 | sort > source.md5
+
+        # get md5 sums for destination
+        find "$output_dir"/"$seqId"/"$panel" -type f | egrep -v "*md5*" | egrep -v "*.log" | xargs md5sum | cut -d" " -f 1 | sort > destination.md5
+
+        sourcemd5file=$(md5sum source.md5 | cut -d" " -f 1)
+        destinationmd5file=$(md5sum destination.md5 | cut -d" " -f 1)
+
+        if [ "$sourcemd5file" = "$destinationmd5file" ]; then
+            echo "MD5 sum of source destination matches that of destination"
+        else
+            echo "MD5 sum of source destination matches does not match that of destination - exiting program "
+            exit 1
+        fi
+
     fi
 
     # mark results as complete - do this first so post processing can start asap
