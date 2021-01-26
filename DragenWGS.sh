@@ -1,24 +1,34 @@
 #!/bin/bash
+
 set -euo pipefail
 
-# Usage: cd /staging/data/fastq/runId/Data/panel/sampleId && bash /data/pipelines/DragenWGS/DragenWGS-1.0.0/DragenWGS.sh 
+# set max processes and open files as these differ between wren and head node
+ulimit -S -u 16384
+ulimit -S -n 65535
 
-version=1.0.0
+
+# Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh 
+
+version=2.0.0
 
 ##############################################
 # SETUP                                      #
 ##############################################
 
+pipeline_dir="/data/diagnostics/pipelines/"
+dragen_ref="/staging/resources/human/reference/GRCh37"
+output_dir="/Output/results/"
+
 
 # load variables for sample and pipeline
 . *.variables
-. /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables
+. "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables
 
 
 # copy relevant variables files to the results directory
-cp /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables ..
-cp -r /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/commands .
-
+cp "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/*.variables ..
+cp -r "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/commands .
+cp -r "$pipeline_dir"/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config .
 
 #############################################
 # Get FASTQs                                #
@@ -49,8 +59,8 @@ echo User Selected to Call CNVS: $callCNV
 if [[ "$callCNV" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
-echo '--enable-cnv true \' >> commands/run_dragen.sh
-echo '--cnv-enable-self-normalization true \' >> commands/run_dragen.sh 
+echo '--enable-cnv true \' >> commands/run_dragen_per_sample.sh
+echo '--cnv-enable-self-normalization true \' >> commands/run_dragen_per_sample.sh 
 
 fi
 
@@ -59,17 +69,14 @@ echo User Selected to Call Repeat Regions: $callRepeats
 if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
-echo '--repeat-genotype-enable true \' >> commands/run_dragen.sh
-echo "--repeat-genotype-specs /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/smn-catalog.grch37.json  \\" >> commands/run_dragen.sh
-echo '--auto-detect-sample-sex true \' >> commands/run_dragen.sh
+echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
+echo "--repeat-genotype-specs config/"$panel"/smn-catalog.grch37.json  \\" >> commands/run_dragen_per_sample.sh
+echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
 
 # run sample level script
-bash commands/run_dragen.sh $seqId $sampleId $pipelineName $pipelineVersion $panel
-
-
-
+bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref
 
 # add gvcfs for joint SNP/Indel calling
 if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
@@ -84,8 +91,8 @@ fi
 
 
 # add tn.tsv files for joint CNV calling 
-if [[ -e "$seqId"_"$sampleId".tn.tsv ]] && [[ $sampleId != *"NTC"* ]]; then
-    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv \\" >> /staging/data/results/$seqId/$panel/TNList.txt
+if [[ -e "$seqId"_"$sampleId".tn.tsv.gz ]] && [[ $sampleId != *"NTC"* ]]; then
+    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv.gz \\" >> ../TNList.txt
 fi
 
 
@@ -109,14 +116,13 @@ if [ $expGVCF == $obsGVCF ]; then
     cd ..
 
     /opt/edico/bin/dragen \
-        -r  /staging/human/reference/GRCh37/ \
+        -r  $dragen_ref \
         --output-directory . \
         --output-file-prefix "$seqId" \
+        --vc-enable-joint-detection true \
         --enable-joint-genotyping true \
         --variant-list gVCFList.txt \
         --strict-mode true \
-        --enable-vqsr true \
-        --vqsr-config /data/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/config/"$panel"/dragen-VQSR.cfg
      
     if [ $callCNV == true ]; then
 
@@ -124,7 +130,7 @@ if [ $expGVCF == $obsGVCF ]; then
 
         cat TNList.txt >> joint_call_cnvs.sh
 
-        bash joint_call_cnvs.sh $seqId $panel
+        bash joint_call_cnvs.sh $seqId $panel $dragen_ref
 
     fi
 
@@ -134,12 +140,70 @@ if [ $expGVCF == $obsGVCF ]; then
 
         cat BAMList.txt >> joint_call_svs.sh
 
-        bash joint_call_svs.sh $seqId $panel
+        bash joint_call_svs.sh $seqId $panel $dragen_ref
+
+    fi
+
+
+    # move results data - don't move symlinks fastqs
+    if [ -d "$output_dir"/"$seqId"/"$panel" ]; then
+        echo "$output_dir/$seqId/$panel already exists - cannot rsync"
+        exit 1
+    else
+
+        mkdir -p "$output_dir"/"$seqId"/"$panel"
+        rsync -azP --no-links . "$output_dir"/"$seqId"/"$panel"
+
+        # get md5 sums for source
+        find . -type f | egrep -v "*md5" | egrep -v "*.log" | xargs md5sum | cut -d" " -f 1 | sort > source.md5
+
+        # get md5 sums for destination
+        find "$output_dir"/"$seqId"/"$panel" -type f | egrep -v "*md5*" | egrep -v "*.log" | xargs md5sum | cut -d" " -f 1 | sort > destination.md5
+
+        sourcemd5file=$(md5sum source.md5 | cut -d" " -f 1)
+        destinationmd5file=$(md5sum destination.md5 | cut -d" " -f 1)
+
+        if [ "$sourcemd5file" = "$destinationmd5file" ]; then
+            echo "MD5 sum of source destination matches that of destination"
+        else
+            echo "MD5 sum of source destination matches does not match that of destination - exiting program "
+            exit 1
+        fi
+
+    fi
+
+    # mark results as complete - do this first so post processing can start asap
+    touch "$output_dir"/"$seqId"/"$panel"/dragen_complete.txt
+    touch "$output_dir"/"$seqId"/"$panel"/post_processing_required.txt
+
+    # clean up staging results
+    rm -r /staging/data/results/"$seqId"/"$panel"
+    # clean up staging fastq
+    rm -r /staging/data/fastq/"$seqId"/Data/"$panel"
+
+
+    # clean up staging fastq if we have processed all panels
+    if [ "$(ls -A /staging/data/fastq/"$seqId"/Data/)" ]; then
+        echo "Not all panels processed - keeping staging fastq"
+    else
+        echo "All panels processed - removing staging fastq directory"
+        rm -r /staging/data/fastq/"$seqId"/
+
+    fi
+
+    # clean up staging results if we have processed all panels
+    if [ "$(ls -A /staging/data/results/"$seqId"/)" ]; then
+        echo "Not all panels processed - keeping staging results"
+    else
+        echo "All panels processed - removing staging results directory"
+        rm -r /staging/data/results/"$seqId"/
 
     fi
 
 else
-    echo "sampleId is not the last sample"
+    echo "$sampleId is not the last sample"
 
 fi
+
+
 
