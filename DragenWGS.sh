@@ -68,8 +68,7 @@ fi
 # run sample level script
 bash commands/run_dragen.sh $seqId $sampleId $pipelineName $pipelineVersion $panel
 
-
-
+touch "$seqId"_"$sampleId".mapping_metrics.csv
 
 # add gvcfs for joint SNP/Indel calling
 if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
