@@ -76,7 +76,11 @@ echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 fi
 
 # run sample level script
+
 bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref
+
+touch "$seqId"_"$sampleId".mapping_metrics.csv
+
 
 # add gvcfs for joint SNP/Indel calling
 if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
