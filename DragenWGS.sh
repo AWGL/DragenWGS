@@ -88,12 +88,6 @@ if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
 fi
 
 
-# add bam files for joint SV calling
-if [[ -e "$seqId"_"$sampleId".bam ]] && [[ $sampleId != *"NTC"* ]]; then
-    echo "--bam-input "$sampleId"/"$seqId"_"$sampleId".bam \\" >> ../BAMList.txt
-fi
-
-
 # add tn.tsv files for joint CNV calling 
 if [[ -e "$seqId"_"$sampleId".tn.tsv.gz ]] && [[ $sampleId != *"NTC"* ]]; then
     echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv.gz \\" >> ../TNList.txt
@@ -113,9 +107,12 @@ obsGVCF=$(wc -l < ../gVCFList.txt)
 if [ $expGVCF == $obsGVCF ]; then
 
     echo "performing joint genotyping of snps/indels"
+    
      
     mv commands/joint_call_cnvs.sh ..
     mv commands/joint_call_svs.sh ..
+    mv commands/create_ped.py ..
+    mv commands/by_family.py ..    
 
     cd ..
 
@@ -142,10 +139,38 @@ if [ $expGVCF == $obsGVCF ]; then
 
         echo Joint Calling SVs
 
-        cat BAMList.txt >> joint_call_svs.sh
+        python create_ped.py --variables "*/*.variables" > "$seqId".ped
 
-        bash joint_call_svs.sh $seqId $panel $dragen_ref
+        python by_family.py "$seqId".ped "$seqId"
+        
+        mkdir sv_calling
 
+        for family in *_for_sv.family; do 
+          
+           cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
+           cat $family >> joint_call_svs.sh_"$family".sh
+           bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref
+
+           rm joint_call_svs.sh_"$family".sh
+        done
+
+        set +u
+        source activate dragenwgs_post_processing
+        set -u
+
+        bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
+        bgzip "$seqId".sv.vcf
+        tabix "$seqId".sv.vcf.gz
+
+        md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
+
+        
+        conda deactivate
+
+        rm -r sv_calling
+        rm *.family
+        rm create_ped.py
+        rm by_family.py
     fi
 
 

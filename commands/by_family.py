@@ -1,12 +1,34 @@
 import csv
+import sys
+import glob
 
-ped = '200923_A00748_0043_BHLK2CDRXX.ped'
 
-seq_id = '200923_A00748_0043_BHLK2CDRXX'
+ped = sys.argv[1]
+
+seq_id = sys.argv[2]
 
 fam_dict = {}
 
 no_fam_int = 0
+
+metrics_files = glob.glob('*/*.mapping_metrics.csv')
+
+min_depth = 5
+
+sample_dict = {}
+
+for coverage_file in metrics_files:
+
+	with open(coverage_file) as csvfile:
+		spamreader = csv.reader(csvfile, delimiter=',')
+		for row in spamreader:
+			key = row[2]
+			value = row[3]
+			if key == 'Average sequenced coverage over genome':
+				if float(value) > min_depth:
+					sample_id = coverage_file.split('/')[0]
+					sample_dict[sample_id] = sample_id
+					break
 
 with open(ped) as csvfile:
 	spamreader = csv.reader(csvfile, delimiter='\t')
@@ -35,13 +57,20 @@ for key in fam_dict:
 
 	out_file = f'{key}_for_sv.family'
 
-	with open(out_file, 'w') as csvfile:
-		spamwriter = csv.writer(csvfile, delimiter='\t')
+	family_rows = []
 
-		new_row = []
+	for sample in fam_dict[key]:
+
+		if sample in sample_dict:
+			
+			family_rows.append(f'--bam-input {sample}/{seq_id}_{sample}.cram \\')
+	
+	if len(family_rows) >0:
+		with open(out_file, 'w') as csvfile:
+			spamwriter = csv.writer(csvfile, delimiter='\t', lineterminator='\n')
 		
-		for sample in fam_dict[key]:
+			for row in family_rows:
 
-			new_row.append(f'{sample}/{seq_id}_{sample}.bam')
+				spamwriter.writerow([row])
 
-		spamwriter.writerow(new_row)
+

@@ -12,7 +12,7 @@ dragen_ref=$6
 -r $dragen_ref \
 --output-directory . \
 --output-file-prefix "$seqId"_"$sampleId" \
---output-format BAM \
+--output-format CRAM \
 --enable-map-align-output true \
 --fastq-list fastqs.csv \
 --fastq-list-sample-id $sampleId \
