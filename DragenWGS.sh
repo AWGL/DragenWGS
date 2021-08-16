@@ -16,7 +16,6 @@ version=2.0.0
 ##############################################
 
 pipeline_dir="/data/diagnostics/pipelines/"
-dragen_ref="/staging/resources/human/reference/GRCh37"
 output_dir="/Output/results/"
 
 
@@ -77,7 +76,7 @@ fi
 
 # run sample level script
 
-bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref
+bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref $assembly
 
 touch "$seqId"_"$sampleId".mapping_metrics.csv
 
