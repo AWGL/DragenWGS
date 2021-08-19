@@ -63,7 +63,7 @@ for key in fam_dict:
 
 		if sample in sample_dict:
 			
-			family_rows.append(f'--bam-input {sample}/{seq_id}_{sample}.cram \\')
+			family_rows.append(f'--cram-input {sample}/{seq_id}_{sample}.cram \\')
 	
 	if len(family_rows) >0:
 		with open(out_file, 'w') as csvfile:
