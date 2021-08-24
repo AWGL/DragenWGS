@@ -16,6 +16,7 @@ version=2.0.0
 ##############################################
 
 pipeline_dir="/data/diagnostics/pipelines/"
+dragen_ref="/staging/resources/human/reference/GRCh37"
 output_dir="/Output/results/"
 
 
@@ -69,21 +70,23 @@ if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
 echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
-echo "--repeat-genotype-specs config/"$panel"/smn-catalog.${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
+echo "--repeat-genotype-specs config/"$panel"/smn-catalog.grch37.json  \\" >> commands/run_dragen_per_sample.sh
 echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
 
 # run sample level script
-
-bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref $assembly
-
-touch "$seqId"_"$sampleId".mapping_metrics.csv
-
+bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref
 
 # add gvcfs for joint SNP/Indel calling
 if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
     echo "$sampleId"/"$seqId"_"$sampleId".hard-filtered.gvcf.gz >> ../gVCFList.txt
+fi
+
+
+# add bam files for joint SV calling
+if [[ -e "$seqId"_"$sampleId".bam ]] && [[ $sampleId != *"NTC"* ]]; then
+    echo "--bam-input "$sampleId"/"$seqId"_"$sampleId".bam \\" >> ../BAMList.txt
 fi
 
 
@@ -106,12 +109,9 @@ obsGVCF=$(wc -l < ../gVCFList.txt)
 if [ $expGVCF == $obsGVCF ]; then
 
     echo "performing joint genotyping of snps/indels"
-    
      
     mv commands/joint_call_cnvs.sh ..
     mv commands/joint_call_svs.sh ..
-    mv commands/create_ped.py ..
-    mv commands/by_family.py ..    
 
     cd ..
 
@@ -138,38 +138,10 @@ if [ $expGVCF == $obsGVCF ]; then
 
         echo Joint Calling SVs
 
-        python create_ped.py --variables "*/*.variables" > "$seqId".ped
+        cat BAMList.txt >> joint_call_svs.sh
 
-        python by_family.py "$seqId".ped "$seqId"
-        
-        mkdir sv_calling
+        bash joint_call_svs.sh $seqId $panel $dragen_ref
 
-        for family in *_for_sv.family; do 
-          
-           cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
-           cat $family >> joint_call_svs.sh_"$family".sh
-           bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref
-
-           rm joint_call_svs.sh_"$family".sh
-        done
-
-        set +u
-        source activate dragenwgs_post_processing
-        set -u
-
-        bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
-        bgzip "$seqId".sv.vcf
-        tabix "$seqId".sv.vcf.gz
-
-        md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
-
-        
-        conda deactivate
-
-        rm -r sv_calling
-        rm *.family
-        rm create_ped.py
-        rm by_family.py
     fi
 
 

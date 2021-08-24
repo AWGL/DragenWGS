@@ -10,8 +10,6 @@ A pipeline to perform joint calling on WGS NGS data on the Dragen server.
 1) Calls SNPs/Indels, SVs, CNVs and Repeat Expansions
 2) Transfers data from dragen to another long term storage location
 
-Configurations are available for use with either Human Reference Genome Version GRCh37 or GRCh38. 
-
 ## Requirements
 
 dragen version 3.7
