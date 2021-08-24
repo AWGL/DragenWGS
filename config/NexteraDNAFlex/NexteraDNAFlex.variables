@@ -3,4 +3,5 @@ callSV=true
 callRepeats=false
 post_processing_pipeline=dragenwgs_post_processing
 post_processing_pipeline_version=development
-
+dragen_ref="/staging/resources/human/reference/GRCh37"
+assembly="GRCh37"
