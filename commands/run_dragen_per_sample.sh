@@ -7,19 +7,20 @@ pipelineName=$3
 pipelineVersion=$4
 panel=$5
 dragen_ref=$6
+assembly=$7
 
 /opt/edico/bin/dragen \
 -r $dragen_ref \
 --output-directory . \
 --output-file-prefix "$seqId"_"$sampleId" \
---output-format BAM \
+--output-format CRAM \
 --enable-map-align-output true \
 --fastq-list fastqs.csv \
 --fastq-list-sample-id $sampleId \
 --enable-duplicate-marking true \
 --enable-variant-caller true \
 --vc-enable-joint-detection true \
---qc-cross-cont-vcf config/"$panel"/sample_cross_contamination_resource_GRCh37.vcf \
+--qc-cross-cont-vcf config/"$panel"/sample_cross_contamination_resource_${assembly}.vcf \
 --vc-sample-name "$sampleId" \
 --vc-emit-ref-confidence GVCF \
 --strict-mode true \
