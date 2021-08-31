@@ -157,9 +157,14 @@ if [ $expGVCF == $obsGVCF ]; then
         source activate dragenwgs_post_processing
         set -u
 
-        bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
-        bgzip "$seqId".sv.vcf
-        tabix "$seqId".sv.vcf.gz
+        #Adding in if statement if only a single family as bcftools merge doesn't work with a single vcf
+	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ] then
+        	cp sv_calling/*.vcf.gz > "$seqId".sv.vcf
+	else
+		bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
+	fi
+        	bgzip "$seqId".sv.vcf
+        	tabix "$seqId".sv.vcf.gz
 
         md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
 
