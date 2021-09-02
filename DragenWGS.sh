@@ -159,11 +159,11 @@ if [ $expGVCF == $obsGVCF ]; then
 
         #Adding in if statement if only a single family as bcftools merge doesn't work with a single vcf
 	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ]; then
-        	cp sv_calling/*.vcf.gz "$seqId".sv.vcf
+        	cp sv_calling/*.vcf.gz "$seqId".sv.vcf.gz
 	else
 		bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
+	       	bgzip "$seqId".sv.vcf
 	fi
-        	bgzip "$seqId".sv.vcf
         	tabix "$seqId".sv.vcf.gz
 
         md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
