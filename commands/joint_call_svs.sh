@@ -10,5 +10,5 @@ dragen_ref=$3
 --ref-dir $dragen_ref \
 --enable-map-align false \
 --enable-sv true \
---output-directory . \
+--output-directory sv_calling \
 --output-file-prefix $seqId \
