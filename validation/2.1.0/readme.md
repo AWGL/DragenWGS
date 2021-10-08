@@ -32,10 +32,31 @@ For use with the same reference genome as previous validations, the precision an
 
 * Coverage of genes was compared between GRCh37 and GRCh38 across seven samples including the GIAB sample HG001. This was calculated using GATK4 [2] DepthOfCoverage followed by [CoverageCalculatorPy](https://github.com/AWGL/CoverageCalculatorPy).
 
-* The distribution of average coverage did not differ significantly.
+* In all cases, average coverage of genes increased with use of GRCh38. 
 
+Sample | Mean Coverage GRCh37 | Mean Coverage GRCh38
+--------|----------------------|---------------------
+GIAB | 50.38 | 56.18
+Sample 1 | 43.93 | 45.99
+Sample 2 | 56.56 | 58.96
+Sample 3 | 53.79 | 56.14
+Sample 4 | 47.27 | 48.97
+Sample 5 | 74.84 | 77.51
+Sample 6 | 63.59 | 66.10
+
+* The distribution of average coverage did not differ significantly (shown by three representative samples).
+
+**GIAB Sample**
 ![](./GIAB_mean_cov.png)
 
+
+**Patient Sample 1
+![](./20M06051_mean_cov.png)
+
+**Patient Sample 2
+![](./21M14285_mean_cov.png)
+
+* 889 genes were identified with coverage differences between GRCh37 and GRCh38 across the seven samples, with 236 of these genes consistently differing in >50% of samples. Of these 236, 46 had decreased coverage in GRCh38. 
 
 ### References
 
