@@ -47,13 +47,16 @@ Sample 6 | 63.59 | 66.10
 * The distribution of average coverage did not differ significantly (shown by three representative samples).
 
 **GIAB Sample**
+
 ![](./GIAB_mean_cov.png)
 
 
 **Patient Sample 1
+
 ![](./20M06051_mean_cov.png)
 
 **Patient Sample 2
+
 ![](./21M14285_mean_cov.png)
 
 * 889 genes were identified with coverage differences between GRCh37 and GRCh38 across the seven samples, with 236 of these genes consistently differing in >50% of samples. Of these 236, 46 had decreased coverage in GRCh38. 
