@@ -28,7 +28,12 @@ For use with the same reference genome as previous validations, the precision an
 
 * Use of CRAM output files with IGV were tested to ensure that artefact checking was not impacted by the change.  
 
+### Coverage 
+
+* Coverage of genes was compared between GRCh37 and GRCh38 across seven samples including the GIAB sample HG001. This was calculated using GATK4 [2] DepthOfCoverage followed by [CoverageCalculatorPy](https://github.com/AWGL/CoverageCalculatorPy).
+
 ### References
 
 [1] https://github.com/Illumina/hap.py
+[2] https://gatk.broadinstitute.org/hc/en-us
 
