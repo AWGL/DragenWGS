@@ -51,11 +51,11 @@ Sample 6 | 63.59 | 66.10
 ![](./GIAB_mean_cov.png)
 
 
-**Patient Sample 1
+**Patient Sample 1**
 
 ![](./20M06051_mean_cov.png)
 
-**Patient Sample 2
+**Patient Sample 2**
 
 ![](./21M14285_mean_cov.png)
 
