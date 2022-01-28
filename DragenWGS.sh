@@ -148,7 +148,7 @@ if [ $expGVCF == $obsGVCF ]; then
           
            cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
            cat $family >> joint_call_svs.sh_"$family".sh
-           bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref
+           bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref $fasta
 
            rm joint_call_svs.sh_"$family".sh
         done
