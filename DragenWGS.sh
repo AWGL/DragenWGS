@@ -69,7 +69,7 @@ if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
 echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
-echo "--repeat-genotype-specs config/"$panel"/smn-catalog.${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
+echo "--repeat-genotype-specs config/builds/"$assembly"/smn-catalog.${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
 echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
@@ -151,6 +151,7 @@ if [ $expGVCF == $obsGVCF ]; then
            bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref $fasta
 
            rm joint_call_svs.sh_"$family".sh
+           
         done
 
         set +u
@@ -161,10 +162,11 @@ if [ $expGVCF == $obsGVCF ]; then
 	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ]; then
         	cp sv_calling/*.vcf.gz "$seqId".sv.vcf.gz
 	else
-		bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
-	       	bgzip "$seqId".sv.vcf
+		   bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
+	       bgzip "$seqId".sv.vcf
 	fi
-        	tabix "$seqId".sv.vcf.gz
+        
+        tabix "$seqId".sv.vcf.gz
 
         md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
 
