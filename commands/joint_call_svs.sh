@@ -2,9 +2,8 @@
 set -euo pipefail
 
 seqId=$1
-panel=$2
-dragen_ref=$3
-fasta=$4
+dragen_ref=$2
+fasta=$3
 
 
 /opt/edico/bin/dragen -f \

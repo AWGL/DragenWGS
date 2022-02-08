@@ -140,6 +140,10 @@ if [ $expGVCF == $obsGVCF ]; then
 
         python create_ped.py --variables "*/*.variables" > "$seqId".ped
 
+        set +u
+        source activate dragenwgs_post_processing
+        set -u
+
         python by_family.py "$seqId".ped "$seqId"
         
         mkdir sv_calling
@@ -148,15 +152,11 @@ if [ $expGVCF == $obsGVCF ]; then
           
            cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
            cat $family >> joint_call_svs.sh_"$family".sh
-           bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref $fasta
+           bash joint_call_svs.sh_"$family".sh $family $dragen_ref $fasta
 
            rm joint_call_svs.sh_"$family".sh
            
         done
-
-        set +u
-        source activate dragenwgs_post_processing
-        set -u
 
         #Adding in if statement if only a single family as bcftools merge doesn't work with a single vcf
 	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ]; then
