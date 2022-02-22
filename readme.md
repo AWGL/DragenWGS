@@ -36,7 +36,7 @@ This can be found within the staging area fastq directory on the Dragen e.g. /st
 Once within this folder:
 
 ```
-sbatch DragenWGS.sh
+bash DragenWGS.sh
 ```
 
 Once the gvcf creation is complete for each sample the joint genotyping will be called and produce the final joint vcf.
