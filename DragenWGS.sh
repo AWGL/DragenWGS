@@ -9,7 +9,7 @@ ulimit -S -n 65535
 
 # Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh 
 
-version=2.1.0
+version=2.2.0
 
 ##############################################
 # SETUP                                      #
@@ -69,7 +69,7 @@ if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
 echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
-echo "--repeat-genotype-specs config/"$panel"/smn-catalog.${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
+echo "--repeat-genotype-specs config/builds/"$assembly"/smn-catalog.${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
 echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
@@ -140,6 +140,10 @@ if [ $expGVCF == $obsGVCF ]; then
 
         python create_ped.py --variables "*/*.variables" > "$seqId".ped
 
+        set +u
+        source activate dragenwgs_post_processing
+        set -u
+
         python by_family.py "$seqId".ped "$seqId"
         
         mkdir sv_calling
@@ -148,23 +152,21 @@ if [ $expGVCF == $obsGVCF ]; then
           
            cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
            cat $family >> joint_call_svs.sh_"$family".sh
-           bash joint_call_svs.sh_"$family".sh $family $panel $dragen_ref
+           bash joint_call_svs.sh_"$family".sh $family $dragen_ref $fasta
 
            rm joint_call_svs.sh_"$family".sh
+           
         done
-
-        set +u
-        source activate dragenwgs_post_processing
-        set -u
 
         #Adding in if statement if only a single family as bcftools merge doesn't work with a single vcf
 	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ]; then
         	cp sv_calling/*.vcf.gz "$seqId".sv.vcf.gz
 	else
-		bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
-	       	bgzip "$seqId".sv.vcf
+		   bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
+	       bgzip "$seqId".sv.vcf
 	fi
-        	tabix "$seqId".sv.vcf.gz
+        
+        tabix "$seqId".sv.vcf.gz
 
         md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
 

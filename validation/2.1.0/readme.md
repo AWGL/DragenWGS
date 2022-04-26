@@ -6,6 +6,7 @@
 * SV calling now split by family
 * Include SV annotation
 * Added in configurations for running with GRCh38
+* Comparison of standard and masked GRCh38 reference versions
 
 ### Recall and Precision
 
@@ -24,11 +25,50 @@ singularity exec --bind /data /data/resources/envs/sifs/hap.py.sif /opt/hap.py/b
 
 For use with the same reference genome as previous validations, the precision and recall values were identical. 
 
+For the comparison between GRCh38 reference versions, the masked reference showed improved metrics across both precision and recall. 
+
 ### CRAM Usability
 
 * Use of CRAM output files with IGV were tested to ensure that artefact checking was not impacted by the change.  
 
+### Coverage 
+
+* Coverage of genes was compared between GRCh37 and GRCh38 across seven samples including the GIAB sample HG001. This was calculated using GATK4 [2] DepthOfCoverage followed by [CoverageCalculatorPy](https://github.com/AWGL/CoverageCalculatorPy).
+
+* In all cases, average coverage of genes increased with use of GRCh38. 
+
+Sample | Mean Coverage GRCh37 | Mean Coverage GRCh38 | Mean Coverage GRCh38 Masked |
+--------|----------------------|---------------------|-----------------------------|
+GIAB | 50.38 | 56.18 | 56.17
+Sample 1 | 43.93 | 45.99 | 45.98 |
+Sample 2 | 56.56 | 58.96 | 58.96 |
+Sample 3 | 53.79 | 56.14 | 56.13 |
+Sample 4 | 47.27 | 48.97 | Not tested |
+Sample 5 | 74.84 | 77.51 | Not tested |
+Sample 6 | 63.59 | 66.10 | Not tested |
+
+* The distribution of average coverage did not differ significantly (shown by three representative samples).
+
+**GIAB Sample**
+
+![](./GIAB_mean_cov.png)
+
+
+**Patient Sample 1**
+
+![](./20M06051_mean_cov.png)
+
+**Patient Sample 2**
+
+![](./21M14285_mean_cov.png)
+
+* 889 genes were identified with coverage differences between GRCh37 and GRCh38 across the seven samples, with 236 of these genes consistently differing in >50% of samples. Of these 236, 46 had decreased coverage in GRCh38. 
+
+* Use of the masked GRCh38 reference genome improved coverage of key fetal anomaly panel genes which were showing to have poor coverage with the standard version of GRCh38 including CBS, CRYAA, KCNE1 and SIK1. 
+
 ### References
 
 [1] https://github.com/Illumina/hap.py
+
+[2] https://gatk.broadinstitute.org/hc/en-us
 

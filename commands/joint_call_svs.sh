@@ -2,11 +2,12 @@
 set -euo pipefail
 
 seqId=$1
-panel=$2
-dragen_ref=$3
+dragen_ref=$2
+fasta=$3
+
 
 /opt/edico/bin/dragen -f \
---sv-reference "$dragen_ref"/human_g1k_v37.fasta \
+--sv-reference "$dragen_ref"/"$fasta" \
 --ref-dir $dragen_ref \
 --enable-map-align false \
 --enable-sv true \
