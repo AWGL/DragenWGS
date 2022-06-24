@@ -35,7 +35,7 @@ import knapsack
 
 # set some params
 min_depth = 5 # samples below this min depth - exclude SV calling
-capacity = 6 # max number of samples to SV call at a time
+capacity = 5 # max number of samples to SV call at a time
 
 
 # ped file
@@ -47,24 +47,41 @@ seq_id = sys.argv[2]
 # id for singletons
 no_fam_int = 0
 
-# we need the metric files for excluding low depth samples
+# we need the metric files (Dragen v3.7) and wgs coverage metric files (Dragen v3.10.8) for excluding low coverage samples
 metrics_files = glob.glob('*/*.mapping_metrics.csv')
+wgs_metrics_files = glob.glob('*/*.wgs_coverage_metrics.csv')
 
 # make a dict of samples with coverage > min_depth
 sample_dict = {}
 
-for coverage_file in metrics_files:
+#Check if we need to be using metrics or wgs metrics files for depth, using just the first file
 
-	with open(coverage_file) as csvfile:
-		spamreader = csv.reader(csvfile, delimiter=',')
-		for row in spamreader:
-			key = row[2]
-			value = row[3]
-			if key == 'Average sequenced coverage over genome':
-				if float(value) > min_depth:
-					sample_id = coverage_file.split('/')[0]
-					sample_dict[sample_id] = sample_id
-					break
+if "Average sequenced coverage over genome" in open(metrics_files[0]).read():
+	for coverage_file in metrics_files:
+
+		with open(coverage_file) as csvfile:
+			spamreader = csv.reader(csvfile, delimiter=',')
+			for row in spamreader:
+				key = row[2]
+				value = row[3]
+				if key == 'Average sequenced coverage over genome':
+					if float(value) > min_depth:
+						sample_id = coverage_file.split('/')[0]
+						sample_dict[sample_id] = sample_id
+						break
+else:
+	for coverage_file in wgs_metrics_files:
+		
+		with open(coverage_file) as csvfile:
+                        spamreader = csv.reader(csvfile, delimiter=',')
+                        for row in spamreader:
+                                key = row[2]
+                                value = row[3]
+                                if key == 'Average alignment coverage over genome':
+                                        if float(value) > min_depth:
+                                                sample_id = coverage_file.split('/')[0]
+                                                sample_dict[sample_id] = sample_id
+                                                break
 
 # dict to store family info e.g. key as family key and value as list of samples in that family
 fam_dict = {}
