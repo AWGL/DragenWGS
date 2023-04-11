@@ -162,7 +162,7 @@ if [ $expGVCF == $obsGVCF ]; then
 	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ]; then
         	cp sv_calling/*.vcf.gz "$seqId".sv.vcf.gz
 	else
-		   bcftools merge -m none sv_calling/*.vcf.gz > "$seqId".sv.vcf
+		   bcftools merge -m none -F x sv_calling/*.vcf.gz > "$seqId".sv.vcf
 	       bgzip "$seqId".sv.vcf
 	fi
         
