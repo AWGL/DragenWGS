@@ -3,6 +3,6 @@ callSV=true
 callRepeats=true
 post_processing_pipeline=dragenwgs_post_processing
 post_processing_pipeline_version=master
-dragen_ref="/staging/resources/human/reference/GRCh38_masked/"
+dragen_ref="/staging/resources/human/reference/GRCh38_masked_v9/"
 assembly="hg38"
 fasta="GRCh38_full_analysis_set_plus_decoy_hla_masked.fa"
