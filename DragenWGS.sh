@@ -69,7 +69,7 @@ if [[ "$callRepeats" == true ]] && [[ $sampleId != *"NTC"* ]];
 then
 
 echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
-echo "--repeat-genotype-specs config/builds/"$assembly"/smn-catalog.${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
+echo "--repeat-genotype-specs config/builds/"$assembly"/repeat_spec_${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
 echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
