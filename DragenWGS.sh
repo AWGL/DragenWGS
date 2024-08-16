@@ -74,6 +74,14 @@ echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
 
 fi
 
+#Enable SMN and other gene specific callers
+if [[ "$callTargeted" == true ]] && [[ $sampleId != *"NTC"* ]];
+then
+
+echo '--enable-targeted=true \' >> commands/run_dragen_per_sample.sh
+
+fi
+
 # run sample level script
 
 bash commands/run_dragen_per_sample.sh $seqId $sampleId $pipelineName $pipelineVersion $panel $dragen_ref $assembly
