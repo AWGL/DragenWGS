@@ -27,3 +27,4 @@ assembly=$7
 --qc-coverage-region-1 config/builds/"$assembly"/"$assembly"_coverage.bed \
 --qc-coverage-reports-1 cov_report \
 --qc-coverage-filters-1 'mapq<20,bq<10' \
+--vc-combine-phased-variants-distance 1 \
