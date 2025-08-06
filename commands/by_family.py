@@ -35,7 +35,7 @@ import knapsack
 
 # set some params
 min_depth = 5 # samples below this min depth - exclude SV calling
-capacity = 5 # max number of samples to SV call at a time
+capacity = 4 # max number of samples to SV call at a time
 
 
 # ped file
