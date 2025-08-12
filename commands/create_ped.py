@@ -2,7 +2,7 @@
 
 import argparse
 import glob
-from pathlib import Path
+import os
 
 """
 Get the variables files and make a PED file from them
@@ -25,7 +25,7 @@ ped_dict = {}
 
 for file in variable_files:
 
-	sample_name = Path(file).stem
+	sample_name = os.path.splitext(os.path.basename(file))[0]
 
 	f = open(file, 'r')
 
@@ -86,4 +86,4 @@ for key in ped_dict:
 
 		phenotype = 2
 
-	print (f'{familyId}\t{sample_id}\t{paternalId}\t{maternalId}\t{sex}\t{phenotype}') 
+	print('{}\t{}\t{}\t{}\t{}\t{}'.format(familyId, sample_id, paternalId, maternalId, sex, phenotype)) 
