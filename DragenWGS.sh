@@ -113,22 +113,28 @@ if [ -d "$output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/" ]; then
 else
         mkdir $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
 fi
-mv ${seqId}_${sampleId}.tn.tsv.gz $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
-mv ${seqId}_${sampleId}.target.counts.bw $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
-mv ${seqId}_${sampleId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
+if [ -e "${seqId}_${sampleId}.tn.tsv.gz" ]; then
+	mv ${seqId}_${sampleId}.tn.tsv.gz $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
+	mv ${seqId}_${sampleId}.target.counts.bw $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
+	mv ${seqId}_${sampleId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
+fi
 #Repeats
 if [ -d "$output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/" ]; then
         echo "$output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/ already exists"
 else
         mkdir $output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/
 fi
-mv ${seqId}_${sampleId}.repeats.vcf* $output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/
+if [ -e "${seqId}_${sampleId}.repeats.vcf.gz" ]; then
+	mv ${seqId}_${sampleId}.repeats.vcf* $output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/
+fi
 if [ -d "$output_dir/$seqId/$panel/repeat_alignments/$sampleId/" ]; then
         echo "$output_dir/$seqId/$panel/repeat_alignments/$sampleId/ already exists"
 else
         mkdir $output_dir/$seqId/$panel/repeat_alignments/$sampleId/
 fi
-mv ${seqId}_${sampleId}.repeats.bam $output_dir/$seqId/$panel/repeat_alignments/$sampleId/
+if [ -e "${seqId}_${sampleId}.repeats.bam" ]; then
+	mv ${seqId}_${sampleId}.repeats.bam $output_dir/$seqId/$panel/repeat_alignments/$sampleId/
+fi
 #Variables
 mv ${sampleId}.variables $output_dir/$seqId/$panel/variables
 #Metrics
@@ -203,14 +209,23 @@ if [ $expGVCF == $obsGVCF ]; then
         python by_family.py "$seqId".ped "$seqId" "$panel"
         
         mkdir sv_calling
+	mkdir temp_crams
 
         for family in *_for_sv.family; do 
-          
+         
+	   #Need to copy the crams back
+	   while IFS= read -r line; do
+	       clean_line="${line% \\}"
+	       path=$(echo "$clean_line" | cut -f 2 -d " " | cut -f 2 -d "/")
+	       cp /mnt/Data-MSA/results/$seqId/$panel/alignments/*/${path}* temp_crams/
+           done < $family
+
            cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
            cat $family >> joint_call_svs.sh_"$family".sh
            bash joint_call_svs.sh_"$family".sh $family $dragen_ref $fasta
 
            rm joint_call_svs.sh_"$family".sh
+	   rm temp_crams/*
            
         done
 

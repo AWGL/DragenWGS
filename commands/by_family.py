@@ -176,7 +176,7 @@ while len(fam_dict) > 0:
 
 				if sample in sample_dict:
 
-					batch_rows.append('--cram-input /mnt/Data-MSA/results/{}/{}/alignments/{}/{}_{}.cram \\'.format(seq_id, panel, sample, seq_id, sample))
+					batch_rows.append('--cram-input temp_crams/{}_{}.cram \\'.format(seq_id, sample))
 
 			# remove family from fam_dict
 			fam_dict.pop(key)		
