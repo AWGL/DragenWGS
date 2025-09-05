@@ -14,7 +14,7 @@ Configurations are available for use with either Human Reference Genome Version 
 
 ## Requirements
 
-dragen version 3.7
+dragen version 4.2.7
 
 ## Run
 
