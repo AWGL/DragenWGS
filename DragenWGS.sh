@@ -9,7 +9,9 @@ ulimit -S -n 65535
 
 # Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh 
 
-version=2.8.0
+
+version=2.9.0
+
 
 ##############################################
 # SETUP                                      #
@@ -71,6 +73,14 @@ then
 echo '--repeat-genotype-enable true \' >> commands/run_dragen_per_sample.sh
 echo "--repeat-genotype-specs config/builds/"$assembly"/repeat_spec_${assembly}.json  \\" >> commands/run_dragen_per_sample.sh
 echo '--auto-detect-sample-sex true \' >> commands/run_dragen_per_sample.sh
+
+fi
+
+#Enable SMN and other gene specific callers
+if [[ "$callTargeted" == true ]] && [[ $sampleId != *"NTC"* ]];
+then
+
+echo '--enable-targeted=true \' >> commands/run_dragen_per_sample.sh
 
 fi
 
