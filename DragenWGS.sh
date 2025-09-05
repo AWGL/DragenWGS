@@ -221,7 +221,8 @@ if [ $expGVCF == $obsGVCF ]; then
 
         for family in *_for_sv.family; do 
          
-	   #Need to copy the crams back
+	   #Need to copy the crams back. This loop reads the family file, removes the line breaks at the end of the line, pulls the name of the cram file from the line and appends it onto the end of a path to copy the cram back
+	   #This is because the cram files are too big to be read over the samba share between the dragen and the vstor
 	   while IFS= read -r line; do
 	       clean_line="${line% \\}"
 	       path=$(echo "$clean_line" | cut -f 2 -d " " | cut -f 2 -d "/")
