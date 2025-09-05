@@ -116,15 +116,15 @@ else
 fi
 mv ${seqId}_${sampleId}.hard-filtered.gvcf.gz* $output_dir/$seqId/$panel/raw_vcf/$sampleId/
 #CNVs
-if [ -d "$output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/" ]; then
-        echo "$output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/ already exists"
+if [ -d "$output_dir/$seqId/$panel/raw_cnv_files/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/raw_cnv_files/$sampleId/ already exists"
 else
-        mkdir $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
+        mkdir $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
 fi
 if [ -e "${seqId}_${sampleId}.tn.tsv.gz" ]; then
-	mv ${seqId}_${sampleId}.tn.tsv.gz $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
-	mv ${seqId}_${sampleId}.target.counts.bw $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
-	mv ${seqId}_${sampleId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_vcf/$sampleId/
+	mv ${seqId}_${sampleId}.tn.tsv.gz $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+	mv ${seqId}_${sampleId}.target.counts.bw $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+	mv ${seqId}_${sampleId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
 fi
 #Repeats
 if [ -d "$output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/" ]; then
