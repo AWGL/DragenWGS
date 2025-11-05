@@ -70,4 +70,4 @@ Chris Medway and Joseph Halstead
 
 ## References
 
- https://support.illumina.com/content/dam/illumina-support/documents/documentation/software_documentation/dragen-bio-it/dragen-bio-it-platform-user-guide-1000000070494-06.pdf
+https://support-docs.illumina.com/SW/dragen_v42/Content/SW/FrontPages/DRAGEN.htm
