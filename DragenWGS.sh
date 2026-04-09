@@ -97,7 +97,7 @@ fi
 
 # add tn.tsv files for joint CNV calling 
 if [[ -e "$seqId"_"$sampleId".tn.tsv.gz ]] && [[ $sampleId != *"NTC"* ]]; then
-    echo "--cnv-input ${output_dir}/${seqId}/${panel}/raw_cnv_vcf/${sampleId}/${seqId}_${sampleId}.tn.tsv.gz \\" >> ../TNList.txt
+    echo "--cnv-input ${output_dir}/${seqId}/${panel}/raw_cnv_files/${sampleId}/${seqId}_${sampleId}.tn.tsv.gz \\" >> ../TNList.txt
 fi
 
 #Move over the sample results into the exact folder structure
