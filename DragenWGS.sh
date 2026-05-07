@@ -282,7 +282,6 @@ if [ $expGVCF == $obsGVCF ]; then
 
     # mark results as complete - do this first so post processing can start asap
     touch "$output_dir"/"$seqId"/"$panel"/dragen_complete.txt
-    touch "$output_dir"/"$seqId"/"$panel"/post_processing_required.txt
 
     # clean up staging results
     rm -r /staging/data/results/"$seqId"/"$panel"
