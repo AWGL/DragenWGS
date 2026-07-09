@@ -124,6 +124,7 @@ fi
 if [ -e "${seqId}_${sampleId}.tn.tsv.gz" ]; then
 	mv ${seqId}_${sampleId}.tn.tsv.gz $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
 	mv ${seqId}_${sampleId}.target.counts.bw $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+    mv ${seqId}_${sampleId}.tn.bw $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
 	mv ${seqId}_${sampleId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
 fi
 #Repeats
