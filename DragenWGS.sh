@@ -157,6 +157,13 @@ mv ${seqId}_${sampleId}.ploidy_estimation_metrics.csv $output_dir/$seqId/$panel/
 mv ${seqId}_${sampleId}.qc-coverage-region-1_coverage_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
 mv ${seqId}_${sampleId}.vc_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
 mv ${seqId}_${sampleId}.wgs_coverage_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+#Targeted Caller Results
+if [ -d "$output_dir/$seqId/$panel/targeted/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/targeted/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/targeted/$sampleId/
+fi
+mv ${seqId}_${sampleId}.targeted* $output_dir/$seqId/$panel/targeted/$sampleId/
 #Tar up everything else
 mkdir ${sampleId}_analysis
 mv ${seqId}_* ${sampleId}_analysis
