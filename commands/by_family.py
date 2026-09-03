@@ -31,7 +31,28 @@ python by_family.py 200923_A00748_0043_BHLK2CDRXX.ped 200923_A00748_0043_BHLK2CD
 import csv
 import sys
 import glob
-import knapsack
+#import knapsack
+
+def greedy_knapsack(weights, capacity):
+    """
+    Simple greedy knapsack implementation for Python 2
+    Returns (total_weight, [indices]) similar to the knapsack package
+    Written by Claude! Need a knapsack replacement
+    """
+    # Create list of (weight, original_index) and sort by weight descending
+    indexed_weights = [(weights[i], i) for i in range(len(weights))]
+    indexed_weights.sort(reverse=True)  # Largest first
+
+    selected_indices = []
+    total_weight = 0
+
+    for weight, original_index in indexed_weights:
+        if total_weight + weight <= capacity:
+            selected_indices.append(original_index)
+            total_weight += weight
+
+    return (total_weight, selected_indices)
+
 
 # set some params
 min_depth = 5 # samples below this min depth - exclude SV calling
@@ -44,12 +65,15 @@ ped = sys.argv[1]
 #seq id
 seq_id = sys.argv[2]
 
+#panel 
+panel = sys.argv[3]
+
 # id for singletons
 no_fam_int = 0
 
 # we need the metric files (Dragen v3.7) and wgs coverage metric files (Dragen v3.10.8) for excluding low coverage samples
-metrics_files = glob.glob('*/*.mapping_metrics.csv')
-wgs_metrics_files = glob.glob('*/*.wgs_coverage_metrics.csv')
+metrics_files = glob.glob('/mnt/Data-MSA/results/{}/{}/metrics/*/*.mapping_metrics.csv'.format(seq_id, panel))
+wgs_metrics_files = glob.glob('/mnt/Data-MSA/results/{}/{}/metrics/*/*.wgs_coverage_metrics.csv'.format(seq_id, panel))
 
 # make a dict of samples with coverage > min_depth
 sample_dict = {}
@@ -66,7 +90,7 @@ if "Average sequenced coverage over genome" in open(metrics_files[0]).read():
 				value = row[3]
 				if key == 'Average sequenced coverage over genome':
 					if float(value) > min_depth:
-						sample_id = coverage_file.split('/')[0]
+						sample_id = coverage_file.split('/')[7]
 						sample_dict[sample_id] = sample_id
 						break
 else:
@@ -79,7 +103,7 @@ else:
                                 value = row[3]
                                 if key == 'Average alignment coverage over genome':
                                         if float(value) > min_depth:
-                                                sample_id = coverage_file.split('/')[0]
+                                                sample_id = coverage_file.split('/')[7]
                                                 sample_dict[sample_id] = sample_id
                                                 break
 
@@ -95,7 +119,7 @@ with open(ped) as csvfile:
 
 		if fam_id == 0 or fam_id == '0':
 
-			fam_dict[f'singleton_{no_fam_int}'] = [sample_name]
+			fam_dict['singleton_{}'.format(no_fam_int)] = [sample_name]
 			no_fam_int = no_fam_int + 1
 
 		else:
@@ -121,9 +145,8 @@ while len(fam_dict) > 0:
 
 		fam_sizes.append(len(fam_dict[key]))
 
-	# this is a version of knapsack problem so use library to get optimal batch
-
-	to_put_in_sack = knapsack.knapsack(fam_sizes, fam_sizes).solve(capacity)
+	# this is a version of knapsack problem - uses custom greedy knapsack function (instead of knapsack function)
+	to_put_in_sack = greedy_knapsack(fam_sizes, capacity)
 
 	# error if no valid solution
 	if to_put_in_sack[0] == 0:
@@ -153,13 +176,13 @@ while len(fam_dict) > 0:
 
 				if sample in sample_dict:
 
-					batch_rows.append(f'--cram-input {sample}/{seq_id}_{sample}.cram \\')
+					batch_rows.append('--cram-input temp_crams/{}_{}.cram \\'.format(seq_id, sample))
 
 			# remove family from fam_dict
 			fam_dict.pop(key)		
 
 	# write batch to file
-	out_file = f'{count}_for_sv.family'
+	out_file = '{}_for_sv.family'.format(count)
 	if len(batch_rows) >0:
 		with open(out_file, 'w') as csvfile:
 			spamwriter = csv.writer(csvfile, delimiter='\t', lineterminator='\n')

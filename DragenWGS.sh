@@ -6,19 +6,17 @@ set -euo pipefail
 ulimit -S -u 16384
 ulimit -S -n 65535
 
+# Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh
 
-# Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh 
-
-
-version=2.9.0
-
+version=3.0.0
 
 ##############################################
 # SETUP                                      #
 ##############################################
 
-pipeline_dir="/data/diagnostics/pipelines/"
-output_dir="/Output/results/"
+pipeline_dir="/mnt/Data-MSA/diagnostics/pipelines/"
+output_dir="/mnt/Data-MSA/results/"
+bcftools_path="/mnt/Data-MSA/diagnostics/apps/miniconda3/envs/bcftools/bin/"
 
 
 # load variables for sample and pipeline
@@ -93,14 +91,81 @@ touch "$seqId"_"$sampleId".mapping_metrics.csv
 
 # add gvcfs for joint SNP/Indel calling
 if [ -e "$seqId"_"$sampleId".hard-filtered.gvcf.gz ]; then
-    echo "$sampleId"/"$seqId"_"$sampleId".hard-filtered.gvcf.gz >> ../gVCFList.txt
+    echo "${output_dir}/${seqId}/${panel}/raw_vcf/${sampleId}/${seqId}_${sampleId}.hard-filtered.gvcf.gz" >> ../gVCFList.txt
 fi
 
 
 # add tn.tsv files for joint CNV calling 
 if [[ -e "$seqId"_"$sampleId".tn.tsv.gz ]] && [[ $sampleId != *"NTC"* ]]; then
-    echo "--cnv-input "$sampleId"/"$seqId"_"$sampleId".tn.tsv.gz \\" >> ../TNList.txt
+    echo "--cnv-input ${output_dir}/${seqId}/${panel}/raw_cnv_files/${sampleId}/${seqId}_${sampleId}.tn.tsv.gz \\" >> ../TNList.txt
 fi
+
+#Move over the sample results into the exact folder structure
+#Alignments
+if [ -d "$output_dir/$seqId/$panel/alignments/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/alignments/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/alignments/$sampleId/
+fi
+mv ${seqId}_${sampleId}.cram* $output_dir/$seqId/$panel/alignments/$sampleId/
+#VCFs
+if [ -d "$output_dir/$seqId/$panel/raw_vcf/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/raw_vcf/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/raw_vcf/$sampleId/
+fi
+mv ${seqId}_${sampleId}.hard-filtered.gvcf.gz* $output_dir/$seqId/$panel/raw_vcf/$sampleId/
+#CNVs
+if [ -d "$output_dir/$seqId/$panel/raw_cnv_files/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/raw_cnv_files/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+fi
+if [ -e "${seqId}_${sampleId}.tn.tsv.gz" ]; then
+	mv ${seqId}_${sampleId}.tn.tsv.gz $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+	mv ${seqId}_${sampleId}.target.counts.bw $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+    mv ${seqId}_${sampleId}.tn.bw $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+	mv ${seqId}_${sampleId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_files/$sampleId/
+fi
+#Repeats
+if [ -d "$output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/
+fi
+if [ -e "${seqId}_${sampleId}.repeats.vcf.gz" ]; then
+	mv ${seqId}_${sampleId}.repeats.vcf* $output_dir/$seqId/$panel/raw_repeat_vcf/$sampleId/
+fi
+if [ -d "$output_dir/$seqId/$panel/repeat_alignments/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/repeat_alignments/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/repeat_alignments/$sampleId/
+fi
+if [ -e "${seqId}_${sampleId}.repeats.bam" ]; then
+	mv ${seqId}_${sampleId}.repeats.bam $output_dir/$seqId/$panel/repeat_alignments/$sampleId/
+fi
+#Variables
+mv ${sampleId}.variables $output_dir/$seqId/$panel/variables
+#Metrics
+if [ -d "$output_dir/$seqId/$panel/metrics/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/metrics/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/metrics/$sampleId/
+fi
+mv ${seqId}_${sampleId}.mapping_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+mv ${seqId}_${sampleId}.ploidy_estimation_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+mv ${seqId}_${sampleId}.qc-coverage-region-1_coverage_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+mv ${seqId}_${sampleId}.vc_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+mv ${seqId}_${sampleId}.wgs_coverage_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+#Tar up everything else
+mkdir ${sampleId}_analysis
+mv ${seqId}_* ${sampleId}_analysis
+mv *_usage.txt ${sampleId}_analysis
+mv fastqs.csv ${sampleId}_analysis
+mv streaming_log_dragen.csv ${sampleId}_analysis
+tar -czvf ${sampleId}_analysis.tar.gz ${sampleId}_analysis/
+mv ${sampleId}_analysis.tar.gz $output_dir/$seqId/$panel/archive
+
 
 
 # expected number of gvcfs
@@ -148,23 +213,29 @@ if [ $expGVCF == $obsGVCF ]; then
 
         echo Joint Calling SVs
 
-        python create_ped.py --variables "*/*.variables" > "$seqId".ped
+        python create_ped.py --variables '/mnt/Data-MSA/results/'"$seqId"'/'"$panel"'/variables/*.variables' > "$seqId".ped
 
-        set +u
-        source activate dragenwgs_post_processing
-        set -u
-
-        python by_family.py "$seqId".ped "$seqId"
+        python by_family.py "$seqId".ped "$seqId" "$panel"
         
         mkdir sv_calling
+	mkdir temp_crams
 
         for family in *_for_sv.family; do 
-          
+         
+	   #Need to copy the crams back. This loop reads the family file, removes the line breaks at the end of the line, pulls the name of the cram file from the line and appends it onto the end of a path to copy the cram back
+	   #This is because the cram files are too big to be read over the samba share between the dragen and the vstor
+	   while IFS= read -r line; do
+	       clean_line="${line% \\}"
+	       path=$(echo "$clean_line" | cut -f 2 -d " " | cut -f 2 -d "/")
+	       cp /mnt/Data-MSA/results/$seqId/$panel/alignments/*/${path}* temp_crams/
+           done < $family
+
            cp joint_call_svs.sh joint_call_svs.sh_"$family".sh
            cat $family >> joint_call_svs.sh_"$family".sh
            bash joint_call_svs.sh_"$family".sh $family $dragen_ref $fasta
 
            rm joint_call_svs.sh_"$family".sh
+	   rm temp_crams/*
            
         done
 
@@ -172,67 +243,71 @@ if [ $expGVCF == $obsGVCF ]; then
 	if [ `ls -1 sv_calling/*vcf.gz | wc -l` -eq 1 ]; then
         	cp sv_calling/*.vcf.gz "$seqId".sv.vcf.gz
 	else
-		   bcftools merge -m none -F x sv_calling/*.vcf.gz > "$seqId".sv.vcf
-	       bgzip "$seqId".sv.vcf
+		   ${bcftools_path}/bcftools merge -m none -F x sv_calling/*.vcf.gz > "$seqId".sv.vcf
+	       ${bcftools_path}/bgzip "$seqId".sv.vcf
 	fi
         
-        tabix "$seqId".sv.vcf.gz
+        ${bcftools_path}/tabix "$seqId".sv.vcf.gz
 
         md5sum "$seqId".sv.vcf.gz | cut -d" " -f 1 > "$seqId".sv.vcf.gz.md5sum
 
         
-        conda deactivate
-
         rm -r sv_calling
         rm *.family
         rm create_ped.py
         rm by_family.py
     fi
 
-
-    # move results data - don't move symlinks fastqs
-    if [ -d "$output_dir"/"$seqId"/"$panel" ]; then
-        echo "$output_dir/$seqId/$panel already exists - cannot rsync"
-        exit 1
+    #Copy everything else
+    #ped
+    if [ -d "$output_dir/$seqId/$panel/ped/" ]; then
+        echo "$output_dir/$seqId/$panel/ped/ already exists"
     else
-
-        mkdir -p "$output_dir"/"$seqId"/"$panel"
-        rsync -azP --no-links . "$output_dir"/"$seqId"/"$panel"
-
-        # get md5 sums for source
-        find . -type f | egrep -v "*md5" | egrep -v "*.log" | egrep "*.vcf.gz" | xargs md5sum | cut -d" " -f 1 | sort > source.md5
-
-        # get md5 sums for destination
-        find "$output_dir"/"$seqId"/"$panel" -type f | egrep -v "*md5*" | egrep -v "*.log" | egrep "*.vcf.gz" | xargs md5sum | cut -d" " -f 1 | sort > destination.md5
-
-        sourcemd5file=$(md5sum source.md5 | cut -d" " -f 1)
-        destinationmd5file=$(md5sum destination.md5 | cut -d" " -f 1)
-
-        if [ "$sourcemd5file" = "$destinationmd5file" ]; then
-            echo "MD5 sum of source destination matches that of destination"
-        else
-            echo "MD5 sum of source destination matches does not match that of destination - exiting program "
-            exit 1
-        fi
-
+        mkdir $output_dir/$seqId/$panel/ped/
     fi
+    mv ${seqId}.ped $output_dir/$seqId/$panel/ped/
+    #SV
+    mv ${seqId}.sv.vcf.gz* $output_dir/$seqId/$panel/raw_sv_vcf/
+    #CNV
+    mv ${seqId}.cnv.vcf.gz* $output_dir/$seqId/$panel/raw_cnv_vcf/
+    mv ${seqId}.cnv_metrics.csv $output_dir/$seqId/$panel/raw_cnv_vcf/
+    #VCFs
+    mv ${seqId}.vcf.gz* $output_dir/$seqId/$panel/raw_vcf/
+    mv ${seqId}.hard-filtered.vcf.gz* $output_dir/$seqId/$panel/raw_vcf/
+    #Variables
+    mv ${panel}.variables $output_dir/$seqId/$panel/
+    #Metrics
+    mv ${seqId}.time_metrics.csv $output_dir/$seqId/$panel/metrics
+    mv ${seqId}.vc_hethom_ratio_metrics.csv $output_dir/$seqId/$panel/metrics
+    mv ${seqId}.vc_metrics.csv $output_dir/$seqId/$panel/metrics
 
     # mark results as complete - do this first so post processing can start asap
     touch "$output_dir"/"$seqId"/"$panel"/dragen_complete.txt
-    touch "$output_dir"/"$seqId"/"$panel"/post_processing_required.txt
 
     # clean up staging results
     rm -r /staging/data/results/"$seqId"/"$panel"
     # clean up staging fastq
-    rm -r /staging/data/fastq/"$seqId"/Data/"$panel"
-
+    if [ -d "/staging/data/fastq/$seqId/Data/$panel" ]; then
+        rm -r /staging/data/fastq/"$seqId"/Data/"$panel"
+    else
+	rm -r /mnt/Data-MSA/results/"$seqId"/fastq/Data/"$panel"
+    fi
 
     # clean up staging fastq if we have processed all panels
-    if [ "$(ls -A /staging/data/fastq/"$seqId"/Data/)" ]; then
-        echo "Not all panels processed - keeping staging fastq"
+    if [ -d "/staging/data/fastq/$seqId" ]; then
+        if [ "$(ls -A /staging/data/fastq/"$seqId"/Data/)" ]; then
+            echo "Not all panels processed - keeping staging fastq"
+	else
+            echo "All panels processed - removing staging fastq directory"
+	    rm -r /staging/data/fastq/"$seqId"/
+        fi
     else
-        echo "All panels processed - removing staging fastq directory"
-        rm -r /staging/data/fastq/"$seqId"/
+	if [ "$(ls -A /mnt/Data-MSA/results/"$seqId"/fastq/Data/)" ]; then
+            echo "Not all panels processed - keeping staging fastq"
+        else
+            echo "All panels processed - removing staging fastq directory"
+            rm -r /mnt/Data-MSA/results/"$seqId"/fastq/
+        fi
 
     fi
 
@@ -244,6 +319,9 @@ if [ $expGVCF == $obsGVCF ]; then
         rm -r /staging/data/results/"$seqId"/
 
     fi
+
+    # Remove lock file from dragen
+    rm /mnt/Data-MSA/raw/dragen_markers/${seqId}_*_locked
 
 else
     echo "$sampleId is not the last sample"
