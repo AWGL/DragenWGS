@@ -8,7 +8,7 @@ ulimit -S -n 65535
 
 # Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh
 
-version=3.0.0
+version=3.0.2
 
 ##############################################
 # SETUP                                      #
