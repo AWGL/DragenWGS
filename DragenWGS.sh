@@ -175,6 +175,7 @@ mv ${seqId}_* ${sampleId}_analysis
 mv *_usage.txt ${sampleId}_analysis
 mv fastqs.csv ${sampleId}_analysis
 mv streaming_log_dragen.csv ${sampleId}_analysis
+mv ${seqId}-${sampleId}.log ${sampleId}_analysis
 tar -czvf ${sampleId}_analysis.tar.gz ${sampleId}_analysis/
 mv ${sampleId}_analysis.tar.gz $output_dir/$seqId/$panel/archive
 
