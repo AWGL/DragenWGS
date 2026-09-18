@@ -8,7 +8,7 @@ ulimit -S -n 65535
 
 # Usage: cd /staging/data/results/$seqId/$panel/$sampleId && bash DragenWGS.sh
 
-version=3.0.0
+version=3.0.2
 
 ##############################################
 # SETUP                                      #
@@ -157,12 +157,25 @@ mv ${seqId}_${sampleId}.ploidy_estimation_metrics.csv $output_dir/$seqId/$panel/
 mv ${seqId}_${sampleId}.qc-coverage-region-1_coverage_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
 mv ${seqId}_${sampleId}.vc_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
 mv ${seqId}_${sampleId}.wgs_coverage_metrics.csv $output_dir/$seqId/$panel/metrics/$sampleId/
+#Targeted Caller Results. These are WGS only, so make the parent directory here too (not in DragenQC like the others)
+if [ -d "$output_dir/$seqId/$panel/targeted/" ]; then
+		echo "$output_dir/$seqId/$panel/targeted/ already exists"
+else
+		mkdir $output_dir/$seqId/$panel/targeted/
+fi
+if [ -d "$output_dir/$seqId/$panel/targeted/$sampleId/" ]; then
+        echo "$output_dir/$seqId/$panel/targeted/$sampleId/ already exists"
+else
+        mkdir $output_dir/$seqId/$panel/targeted/$sampleId/
+fi
+mv ${seqId}_${sampleId}.targeted* $output_dir/$seqId/$panel/targeted/$sampleId/
 #Tar up everything else
 mkdir ${sampleId}_analysis
 mv ${seqId}_* ${sampleId}_analysis
 mv *_usage.txt ${sampleId}_analysis
 mv fastqs.csv ${sampleId}_analysis
 mv streaming_log_dragen.csv ${sampleId}_analysis
+mv ${seqId}-${sampleId}.log ${sampleId}_analysis
 tar -czvf ${sampleId}_analysis.tar.gz ${sampleId}_analysis/
 mv ${sampleId}_analysis.tar.gz $output_dir/$seqId/$panel/archive
 
